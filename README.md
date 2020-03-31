@@ -1,6 +1,6 @@
 # Agent-based Modeling of COVID19 using age distribution and family structure
 
-- Code for the preprint: The Role of Age Distribution and Family Structure on COVID-19 Dynamics: A Preliminary Modeling Assessment for Hubei and Lombardy
+Code for the [preprint](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3564800): The Role of Age Distribution and Family Structure on COVID-19 Dynamics: A Preliminary Modeling Assessment for Hubei and Lombardy
 
 ## Running experiments
 
