@@ -125,7 +125,7 @@ are documnted. This is used to calibrate p_documented_in_mild, which is the per-
 day probability"""
 
 isolation_filename='./isolation_exps/reducedBy3_for_group5.pickle'
-mean_time_to_isolate_factor = ((0, 14, 1), (14, 24, 1), (25, 39, 1), (40, 69, 1), (70, 100, 0.347))
+mean_time_to_isolate_factor = ((0, 14, 1), (14, 24, 1), (25, 39, 1), (40, 69, 1), (70, 100, 1))
 mean_time_to_isolate_factor = np.array(mean_time_to_isolate_factor)
 
 
