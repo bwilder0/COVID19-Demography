@@ -706,12 +706,12 @@ datatypes_n_t = [
 
 for d in datatypes_n_1:
     df = pd.DataFrame(d['data'])
-    df.to_csv(fname%d['name'],sep='\t',index=False,header=False)
+    df.to_csv(fname%d['name'],sep='\t',index=False,header=False, na_rep='NA')
 
 
 for d in datatypes_n_t:
     df = pd.DataFrame(d['data'])
-    df.to_csv(fname%d['name'],sep='\t',index=False,header=False)
+    df.to_csv(fname%d['name'],sep='\t',index=False,header=False, na_rep='NA')
 
 
 
