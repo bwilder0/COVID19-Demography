@@ -28,7 +28,7 @@ EXP_ROOT_DIR = "age_policies"
 
 # Real
 N=10000000.
-load_population = True
+load_population = False
 N_INFECTED_START = 5.
 
 # Test
@@ -80,19 +80,20 @@ all_age_isolation_policies = []
 #         all_age_isolation_policies.append(combo)
 
 
-# # 3. Baseline that isolates no one
-# all_age_isolation_policies = [np.zeros(n_ages)]
+# 3. Baseline that isolates no one
+all_age_isolation_policies = [np.zeros(n_ages)]
 
 
 # 4. Baselines that keep some percentage of the entire population isolated 
-for val in [0.1, 0.25, 0.5, 1.0]:
-    combo = np.zeros(n_ages)
-    combo[:]=val
-    all_age_isolation_policies.append(combo)
+# for val in [0.1, 0.25, 0.5, 1.0]:
+#     combo = np.zeros(n_ages)
+#     combo[:]=val
+#     all_age_isolation_policies.append(combo)
 
 
 # Variations on mean_time_to_isolation
-mean_time_to_isolations = [4.6, 10000]
+# mean_time_to_isolations = [4.6, 10000]
+mean_time_to_isolations = [4.6]
 
 
 
@@ -105,11 +106,12 @@ mean_time_to_isolations = [4.6, 10000]
 # Isolation = only infect within household (stronger)
 
 # Simulate the lockdown?
-# d_lockdown = date(2020, 3, 8) # lockdown
-d_lockdown = date(2022, 12, 31) # no lockdown
+d_lockdown = date(2020, 3, 8) # lockdown
+# d_lockdown = date(2022, 12, 31) # no lockdown
 
 # If lockdown, by how much do divide contact matrix?
-factor = 2.0
+# factor = 2.0
+factor = 1.0
 
 # What day to start age-specific isolation policies?
 d_stay_home_start = date(2020, 3, 8) 

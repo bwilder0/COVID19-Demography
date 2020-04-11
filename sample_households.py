@@ -25,7 +25,7 @@ def get_mother_birth_age_distribution(country):
         csv_reader = csv.reader(csv_file, delimiter=',')
         for row in csv_reader:
             if row[0]==country:
-                #15-19	20-24	25-29	30-34	35-39	40-44	45-49
+                #15-19  20-24   25-29   30-34   35-39   40-44   45-49
                 for i in range(7):
                     mother_birth_age_distribution.append(float(row[i+1]))
                 break
@@ -35,7 +35,7 @@ def get_mother_birth_age_distribution(country):
     
 
 def sample_households_china(n):
-    max_household_size = 4
+    max_household_size = 5
 
     households = np.zeros((n, max_household_size), dtype=np.int)
     households[:] = -1
@@ -53,6 +53,16 @@ def sample_households_china(n):
     household_probs = np.array([0.1703, .2117, 0.3557, 0.1126])
     household_probs /= household_probs.sum()
     num_generated = 0
+    max_child_age = 26
+    max_birth_age = 32
+    
+    #https://www.worldometers.info/demographics/china-demographics/
+    #solve for probability of 1 child to get average 1.7 children per woman
+    p_one_child = 1.7/3
+    
+    #calibrate this to match data distribution better
+    p_single_parent = 0.3
+    
     while num_generated < n:
         if n - num_generated < 5:
             i = 0
@@ -61,51 +71,86 @@ def sample_households_china(n):
         #single person household
         #sample from age distribution
         if i == 0:
-            age[num_generated] = np.random.choice(n_ages, p=age_distribution)
+            p_young = age_distribution[22:max_child_age].sum()/(age_distribution[22:max_child_age].sum() + age_distribution[60:].sum())
+            if np.random.rand() < p_young:
+                renormalized = age_distribution[22:max_child_age]
+                renormalized = renormalized/renormalized.sum()
+                age[num_generated] = np.random.choice(max_child_age-22, p=renormalized) + 22
+            else:
+                renormalized = age_distribution[50:]
+                renormalized = renormalized/renormalized.sum()
+                age[num_generated] = np.random.choice(n_ages-50, p=renormalized) + 50
+
+#            renormalized = age_distribution[max_child_age:]
+#            renormalized = renormalized/renormalized.sum()
+#            age[num_generated] = np.random.choice(n_ages-max_child_age, p=renormalized) + max_child_age
             generated_this_step = 1
         #couple, sample from age distribution conditioned on age >= 22
         elif i == 1:
-            renormalized = age_distribution[22:]
+            renormalized = age_distribution[max_child_age:]
             renormalized = renormalized/renormalized.sum()
-            age[num_generated] = np.random.choice(n_ages-22, p=renormalized) + 22
-            age[num_generated+1] = np.random.choice(n_ages-22, p=renormalized) + 22
+            age[num_generated] = np.random.choice(n_ages-max_child_age, p=renormalized) + max_child_age
+            age[num_generated+1] = np.random.choice(n_ages-max_child_age, p=renormalized) + max_child_age
             generated_this_step = 2
         #some information about mother's age at birth of first child
         #https://link.springer.com/article/10.1007/s42379-019-00022-9
         elif i == 2:
-            renormalized = age_distribution[:22]
+            renormalized = age_distribution[:max_child_age]
             renormalized = renormalized/renormalized.sum()
-            child_age = np.random.choice(22, p=renormalized)
+            child_age = np.random.choice(max_child_age, p=renormalized)
             age[num_generated] = child_age
             #super rough approximation, women have child at a uniformly random age between 23 and 33
-            renormalized = age_distribution[23:34]
+            renormalized = age_distribution[max_child_age:max_birth_age]
             renormalized = renormalized/renormalized.sum()
-            mother_age_at_birth = np.random.choice(11, p=renormalized) + 23
+            mother_age_at_birth = np.random.choice(max_birth_age-max_child_age, p=renormalized) + max_child_age
             mother_current_age = mother_age_at_birth + child_age
             age[num_generated + 1] = mother_current_age
-            age[num_generated + 2] = mother_current_age
-            generated_this_step = 3
+            generated_this_step = 2
+            if np.random.rand() < 1 - p_single_parent:
+                age[num_generated + 2] = mother_current_age
+                generated_this_step += 1
+            #generate another child younger than the first
+            if np.random.rand() < 1 - p_one_child and child_age > 0:
+                offset = min((5, child_age))
+                renormalized = age_distribution[child_age-offset:child_age]
+                renormalized = renormalized/renormalized.sum()
+                child_age = np.random.choice(offset, p=renormalized) + child_age
+                age[num_generated+generated_this_step] = child_age
+                generated_this_step += 1
+
         elif i == 3:
             #start by generating parents/unmarried child
-            renormalized = age_distribution[:22]
+            renormalized = age_distribution[:max_child_age]
             renormalized = renormalized/renormalized.sum()
-            child_age = np.random.choice(22, p=renormalized)
+            child_age = np.random.choice(max_child_age, p=renormalized)
             age[num_generated] = child_age
             #super rough approximation, women have child at a uniformly random age between 23 and 33
-            renormalized = age_distribution[23:34]
+            renormalized = age_distribution[max_child_age:max_birth_age]
             renormalized = renormalized/renormalized.sum()
-            mother_age_at_birth = np.random.choice(11, p=renormalized) + 23
+            mother_age_at_birth = np.random.choice(max_birth_age-max_child_age, p=renormalized) + max_child_age
             mother_current_age = mother_age_at_birth + child_age
             age[num_generated + 1] = mother_current_age
-            age[num_generated + 2] = mother_current_age
+            generated_this_step = 2
+            if np.random.rand() < 1 - p_single_parent:
+                age[num_generated + 2] = mother_current_age
+                generated_this_step += 1
             #add grandparents
-            renormalized = age_distribution[23:34]
+            renormalized = age_distribution[max_child_age:max_birth_age]
             renormalized = renormalized/renormalized.sum()
-            grandmother_age_at_birth = np.random.choice(11, p=renormalized) + 23
+            grandmother_age_at_birth = np.random.choice(max_birth_age-max_child_age, p=renormalized) + max_child_age
             grandmother_current_age = grandmother_age_at_birth + mother_current_age
-            age[num_generated + 3] = grandmother_current_age
-            age[num_generated + 4] = grandmother_current_age
-            generated_this_step = 5
+            age[num_generated + generated_this_step] = grandmother_current_age
+            age[num_generated + generated_this_step + 1] = grandmother_current_age
+            generated_this_step += 2
+            #generate another child younger than the first
+            if np.random.rand() < 1 - p_one_child and child_age > 0:
+                offset = min((5, child_age))
+                renormalized = age_distribution[child_age-offset:child_age]
+                renormalized = renormalized/renormalized.sum()
+                child_age = np.random.choice(offset, p=renormalized) + child_age
+                age[num_generated+generated_this_step] = child_age
+                generated_this_step += 1
+
         
         #update list of household contacts
         for i in range(num_generated, num_generated+generated_this_step):
