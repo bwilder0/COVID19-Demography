@@ -1,3 +1,4 @@
 age_policies/
 __pycache__/
 *.pickle
+!cred_temp.pickle
